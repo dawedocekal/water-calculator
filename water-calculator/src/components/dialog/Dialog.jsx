@@ -15,7 +15,7 @@ const Dialog = ({ handleSuccess, children, title = '', openerTitle = '' }) => {
   const handleClose = () => setIsOpen(false);
 
   const handleSuccessAndClose = () => {
-    handleSuccess?.()
+    handleSuccess()
     handleClose()
   } 
 
@@ -26,10 +26,10 @@ const Dialog = ({ handleSuccess, children, title = '', openerTitle = '' }) => {
       </Button>
       <MUIDialog open={isOpen} onClose={handleClose}>
         <DialogTitle>{title}</DialogTitle>
-        <DialogContent>{children}</DialogContent>
+        <DialogContent sx={{width: '500px'}}>{children}</DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Zavřít</Button>
-          <Button onClick={handleSuccessAndClose}>Potvrdit</Button>
+          {handleSuccess && (<Button onClick={handleSuccessAndClose}>Potvrdit</Button>)}
         </DialogActions>
       </MUIDialog>
     </div>
