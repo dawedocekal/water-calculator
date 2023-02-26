@@ -1,4 +1,4 @@
-import { TextField, Box, FormLabel, FormHelperText, FormControl } from "@mui/material";
+import { TextField, Box, FormLabel, FormControl } from "@mui/material";
 import { Controller } from "react-hook-form";
 
 const InputTypeQuestion = ({
@@ -12,10 +12,10 @@ const InputTypeQuestion = ({
     <Controller
       name={name}
       control={formControl}
-      rules={{ required: true }}
+      rules={{ required: true, min: 1 }}
       defaultValue={""}
       render={({ field }) =>
-        renderInputTypeQuestion(field, title, label, !!errors[`${name}`])
+        renderInputTypeQuestion(field, title, label, errors[`${name}`])
       }
     />
   );
@@ -25,21 +25,24 @@ const renderInputTypeQuestion = (
   field = {},
   title = "",
   label = "",
-  hasError
+  inputErrors
 ) => (
   <Box>
-    <FormControl error={hasError} sx={{ mb: 4, mt: 1 }}>
+    <FormControl error={!!inputErrors} sx={{ mt: 1 }}>
       <FormLabel sx={{ display: "block" }}>{title}</FormLabel>
       <TextField
         {...field}
         label={label}
         type="number"
-        error={hasError}
+        error={!!inputErrors}
         variant="filled"
+        helperText={
+          inputErrors?.type === "required"
+            ? `Otázka: „${title}“ je povinná`
+            : inputErrors?.type === "min" &&
+              "Odpověď musí být kladné číslo větší než 0"
+        }
       />
-      {hasError && (
-        <FormHelperText>{`Otázka: „${title}“ je povinná`}</FormHelperText>
-      )}
     </FormControl>
   </Box>
 );

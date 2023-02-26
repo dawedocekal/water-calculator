@@ -6,6 +6,7 @@ import InputTypeQuestion from "../questions/InputTypeQuestion";
 import RadioTypeQuestion from "../questions/RadioTypeQuestion";
 import SubmitButton from "../submitButton/SubmitButton";
 import AddQuestionDialog from "../addQuestionDialog/AddQuestionDialog";
+import DeleteQuestionDialog from "../deleteQuestionDialog/DeleteQuestionDialog";
 
 const QuestionsList = () => {
   const {
@@ -13,7 +14,7 @@ const QuestionsList = () => {
     control,
     formState: { errors },
   } = useForm();
-
+  const [questions, setQuestions] = useState(defaultQuestions);
   const [calculatedWaterByDay, setCalculatedWaterByDay] = useState();
 
   const onSubmit = (data) => {
@@ -22,26 +23,13 @@ const QuestionsList = () => {
   };
 
   const calculate = (formData) => {
-    const questionsNames = [];
+    let calculation = 0
+    questions.forEach((question) => {
+      calculation = question.calculateFn(calculation, Number(formData[question?.name]))
+    })
 
-    defaultQuestions.forEach((defaultQuestion) => questionsNames.push(defaultQuestion.name));
-
-    const questionsNamesException = ["vaha", "kategorie", "pocasi"];
-    const questionNamesWithPlusOperation = questionsNames.filter(
-      (question) => !questionsNamesException.includes(question)
-    );
-
-    let calculation = formData["vaha"] * formData["kategorie"];
-
-    questionNamesWithPlusOperation.forEach(
-      (question) =>
-        (calculation += Number(formData[question]))
-    );
-
-    calculation = calculation * Number("1." + formData["pocasi"]);
-
-    return Math.round(calculation);
-  };
+    return calculation
+  }
 
   return (
     <Container sx={{ textAlign: "center" }}>
@@ -53,39 +41,52 @@ const QuestionsList = () => {
           mx: "auto",
         }}
       >
-        <AddQuestionDialog />
+        <AddQuestionDialog
+          questions={questions}
+          addQuestionCallback={setQuestions}
+        />
         <form onSubmit={handleSubmit(onSubmit)}>
-          {defaultQuestions.map((question) => {
+          {questions.map((question) => {
             return question.type === "input" ? (
-              <InputTypeQuestion
-                key={question?.name}
-                formControl={control}
-                errors={errors}
-                {...question}
-              />
+              <Box key={question?.name} sx={{mb:4}}>
+                <InputTypeQuestion
+                  formControl={control}
+                  errors={errors}
+                  {...question}
+                />
+                <DeleteQuestionDialog currentQuestion={question} deleteQuestionCallback={setQuestions} questions={questions} />
+              </Box>
             ) : (
-              <RadioTypeQuestion
-                key={question?.name}
-                formControl={control}
-                errors={errors}
-                {...question}
-              />
+              <Box key={question?.name} sx={{mb:4}} >
+                <RadioTypeQuestion
+                  formControl={control}
+                  errors={errors}
+                  {...question}
+                />
+                <DeleteQuestionDialog currentQuestion={question} deleteQuestionCallback={setQuestions} questions={questions} />
+              </Box>
             );
           })}
           <SubmitButton buttonText={"Vypočítat"} />
         </form>
         <RecommendedDailyWatterSection
           calculatedWaterByDay={calculatedWaterByDay}
+          errors={errors}
         />
       </Box>
     </Container>
   );
 };
 
-const RecommendedDailyWatterSection = ({ calculatedWaterByDay }) => {
-  if (!calculatedWaterByDay) return null;
+const RecommendedDailyWatterSection = ({ calculatedWaterByDay, errors }) => {
+  //Pokud nemám výpočet, nebo mi neprošla validace na jednotlivých otázkách, výpočet schovám (tím se vyhnu nevalidním datům)
+  if (!calculatedWaterByDay || Object.keys(errors).length !== 0) return null;
 
-  return <Box sx={{mt: 4}}>Dnes byste měli vypít {calculatedWaterByDay / 1000} l vody.</Box>;
+  return (
+    <Box sx={{ mt: 4 }}>
+      Dnes byste měli vypít {calculatedWaterByDay / 1000} l vody.
+    </Box>
+  );
 };
 
 export default QuestionsList;

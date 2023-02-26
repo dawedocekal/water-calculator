@@ -36,7 +36,7 @@ const renderRadioTypeQuestion = (
   hasError
 ) => (
   <Box>
-    <FormControl error={hasError} sx={{ mb: 4, mt: 1 }}>
+    <FormControl error={hasError} sx={{ mt: 1 }}>
       <FormLabel>{title}</FormLabel>
       <RadioGroup {...field}>
         {renderRadioOptions(options)}
